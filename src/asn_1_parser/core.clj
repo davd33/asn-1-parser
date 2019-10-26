@@ -4,8 +4,9 @@
             [clojure.java.io :as io]
             [clojure.pprint  :refer [pprint]])
   (:import java.io.RandomAccessFile
-          java.nio.ByteBuffer
-          javax.xml.bind.DatatypeConverter))
+           java.nio.ByteBuffer
+           java.nio.BufferUnderflowException
+           javax.xml.bind.DatatypeConverter))
 
 (defn base64-extract
   [path]
@@ -20,9 +21,32 @@
   [path]
   (ByteBuffer/wrap (base64-bytes path)))
 
+(defn type-of
+  [byte]
+  (cond
+    (= 0x30 byte) "SEQUENCE"
+    (nil? byte) nil
+    :else "NOT_HANDLED"))
+
+(defn next-byte
+  [bb]
+  (try (.get bb)
+       (catch BufferUnderflowException e
+         ;; we're at the end of the byte buffer
+         nil)))
+
+(defn traverse-byte-buffer
+  [bb f]
+  (loop [types []]
+    (let [next-value (f (next-byte bb))]
+      (if (nil? next-value)
+        types
+        (recur
+         (conj types next-value))))))
+
 (defn parse-asn1
   [bb]
-  ::nothing-parsed)
+  (traverse-byte-buffer bb type-of))
 
 (defn -main [& args]
   (if-let [key-path (first args)]
