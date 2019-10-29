@@ -1,11 +1,7 @@
 # asn-1-parser
 
 In this project, a RSA Private Key parser is implemented.
-You can try it by using the provided sample private key file `key.pem`.
-
-## Installation
-
-Download from http://example.com/FIXME.
+You can try it by using the provided sample private key file `key.pem`
 
 ## Usage
 
